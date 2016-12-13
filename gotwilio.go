@@ -40,8 +40,28 @@ func NewTwilioClientCustomHTTP(accountSid, authToken string, HTTPClient *http.Cl
 	return &Twilio{accountSid, authToken, twilioUrl, HTTPClient}
 }
 
+func (twilio *Twilio) get(twilioUrl string) (*http.Response, error) {
+	return twilio.send(nil, twilioUrl, "GET")
+}
+
 func (twilio *Twilio) post(formValues url.Values, twilioUrl string) (*http.Response, error) {
-	req, err := http.NewRequest("POST", twilioUrl, strings.NewReader(formValues.Encode()))
+	return twilio.send(formValues, twilioUrl, "POST")
+}
+
+func (twilio *Twilio) delete(twilioUrl string) (*http.Response, error) {
+	return twilio.send(nil, twilioUrl, "DELETE")
+}
+
+func (twilio *Twilio) send(formValues url.Values, twilioUrl, method string) (res *http.Response, err error) {
+	var req *http.Request
+	if method == "POST" {
+		req, err = http.NewRequest("POST", twilioUrl, strings.NewReader(formValues.Encode()))
+	} else if method == "GET" {
+		req, err = http.NewRequest("GET", twilioUrl, nil)
+	} else if method == "DELETE" {
+		req, err = http.NewRequest("DELETE", twilioUrl, nil)
+	}
+
 	if err != nil {
 		return nil, err
 	}
